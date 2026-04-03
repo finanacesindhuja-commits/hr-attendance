@@ -46,7 +46,7 @@ function StaffLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Hr Att Portal</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Stff attendence Portal</h1>
           <p className="text-gray-500 mt-2">Log in to manage your attendance</p>
         </div>
 
@@ -65,7 +65,7 @@ function StaffLogin() {
             <input
               type="text"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono uppercase"
-              placeholder="e.g. STF001"
+              placeholder="Enter STF ID"
               value={staffId}
               onChange={(e) => setStaffId(e.target.value)}
               required
