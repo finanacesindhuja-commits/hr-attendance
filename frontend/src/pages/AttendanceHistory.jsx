@@ -1,0 +1,102 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const API = 'http://localhost:5002';
+
+export default function AttendanceHistory() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const info = localStorage.getItem('staffInfo');
+    if (!info) { navigate('/login'); return; }
+    const parsed = JSON.parse(info);
+    fetchHistory(parsed.staff_id);
+  }, [navigate]);
+
+  const fetchHistory = async (staffId) => {
+    try {
+      const res = await axios.get(`${API}/staff/attendance/history/${staffId}`);
+      setHistory(res.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString(undefined, { 
+      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
+    });
+  };
+
+  const formatTime = (isoString) => {
+    return isoString ? new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+  };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-indigo-600 border-indigo-100"></div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-10">
+      <nav className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+            <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Personal Attendance Log</h1>
+        </div>
+      </nav>
+
+      <main className="max-w-4xl mx-auto p-4 md:p-8">
+        <div className="bg-white rounded-3xl shadow-sm border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b">
+                <tr>
+                  <th className="px-8 py-5">Date</th>
+                  <th className="px-8 py-5">Check In</th>
+                  <th className="px-8 py-5">Check Out</th>
+                  <th className="px-8 py-5">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {history.map((record) => (
+                  <tr key={record.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-8 py-6 font-bold text-gray-700 whitespace-nowrap">
+                      {formatDate(record.date)}
+                    </td>
+                    <td className="px-8 py-6 font-mono text-sm text-indigo-600 font-semibold">
+                      {formatTime(record.check_in)}
+                    </td>
+                    <td className="px-8 py-6 font-mono text-sm text-amber-600 font-semibold">
+                      {formatTime(record.check_out)}
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-wider">
+                        {record.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {history.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="px-8 py-20 text-center text-gray-400 italic font-medium">No records found. Start your first workday!</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
