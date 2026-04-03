@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5050';
+const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-dx3c.onrender.com';
+const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-dx3c.onrender.com';
 let socket;
 
 function StaffDashboard() {

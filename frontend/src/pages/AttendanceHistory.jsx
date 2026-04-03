@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = 'http://localhost:5002';
+const API = 'https://hr-attendance-dx3c.onrender.com';
 
 export default function AttendanceHistory() {
   const [history, setHistory] = useState([]);
