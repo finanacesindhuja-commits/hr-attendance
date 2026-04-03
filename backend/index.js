@@ -9,6 +9,7 @@ const app = express();
 const http = require('http').createServer(app);
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
+  'https://hr-attendance-ashy.vercel.app', // Deployed Frontend URL
   'http://localhost:5174', // Fallback local dev port 1
   'http://localhost:5175'  // Fallback local dev port 2
 ];
