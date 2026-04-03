@@ -16,13 +16,18 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    // or if the origin is from Vercel, localhost, or explicitly matches.
+    if (!origin || 
+        origin.includes('localhost') || 
+        origin.includes('vercel.app') || 
+        allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked Access -> Not allowed by CORS Security Policy'));
+      callback(new Error('CORS Policy Blocked This Request'));
     }
   },
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
   credentials: true
 };
 
