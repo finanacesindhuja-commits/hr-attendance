@@ -1,0 +1,6 @@
+{
+  "appId": "com.hr.attendance",
+  "appName": "hr-attendance",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

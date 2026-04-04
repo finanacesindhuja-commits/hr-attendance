@@ -96,20 +96,51 @@ app.get('/staff/locations', async (req, res) => {
   }
 });
 
-app.post('/staff/update-location', (req, res) => {
-  const { staff_id, name, latitude, longitude } = req.body;
-  const locationData = { staff_id, name, latitude, longitude, timestamp: new Date().toISOString() };
-  liveStaffLocations.set(staff_id, locationData);
-  io.emit('live-location-update', locationData);
-  res.json({ success: true });
+app.post('/staff/update-location', async (req, res) => {
+  try {
+    const { staff_id, name, latitude, longitude } = req.body;
+    const locationData = { staff_id, name, latitude, longitude, timestamp: new Date().toISOString() };
+
+    // 1. Update In-memory Map for real-time speed
+    liveStaffLocations.set(staff_id, locationData);
+
+    // 2. Broadcast via Socket.io
+    io.emit('live-location-update', locationData);
+
+    // 3. Save to Supabase for history/persistence
+    await supabase.from('staff_locations').insert([{
+      staff_id,
+      latitude,
+      longitude
+    }]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Location Update Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 io.on('connection', (socket) => {
   console.log('🔌 New real-time client connected');
-  socket.on('staff-location-update', (data) => {
+
+  socket.on('staff-location-update', async (data) => {
     const locationData = { ...data, timestamp: new Date().toISOString() };
+
+    // Update Map and Emit
     liveStaffLocations.set(data.staff_id, locationData);
     io.emit('live-location-update', locationData);
+
+    // Save to DB
+    try {
+      await supabase.from('staff_locations').insert([{
+        staff_id: data.staff_id,
+        latitude: data.latitude,
+        longitude: data.longitude
+      }]);
+    } catch (e) {
+      console.error('Socket Location DB Save Error:', e.message);
+    }
   });
 });
 
