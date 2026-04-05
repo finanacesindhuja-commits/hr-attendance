@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportHeight="108"
+    android:viewportWidth="108">
+
+    <!-- Premium Different & Modern "HR+" Design -->
+
+    <!-- Letter H (Pure White) - Scaled Down & Centered -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,42 L38,42 L38,52 L48,52 L48,42 L54,42 L54,68 L48,68 L48,58 L38,58 L38,68 L32,68 Z" />
+
+    <!-- Letter R (Pure White) - Scaled Down & Centered -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,42 L68,42 C71,42 74,44 74,48 C74,52 71,54 68,54 L64,54 L64,42 M58,42 L58,68 L64,68 L64,58 L68,58 L73,68 L80,68 L74,58 C77,56 80,53 80,48 C80,41 75,38 68,38 L58,38 Z" />
+
+    <!-- Stylized Plus Sign (Electric Neon Cyan - Different Color) -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M78,35 L83,35 L83,40 L88,40 L88,45 L83,45 L83,50 L78,50 L78,45 L73,45 L73,40 L78,40 Z" />
+
+</vector>
