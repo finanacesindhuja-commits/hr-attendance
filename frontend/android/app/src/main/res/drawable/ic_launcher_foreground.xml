@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportHeight="108"
+    android:viewportWidth="108">
+    <!-- Circle Decoration -->
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+
+    <!-- Text "HR+" Design (Hand-drawn as paths for better scaling) -->
+    <!-- Letter H -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,35 L38,35 L38,50 L50,50 L50,35 L58,35 L58,73 L50,73 L50,58 L38,58 L38,73 L30,73 Z" />
+
+    <!-- Letter R -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M65,35 L75,35 C80,35 83,37 83,42 C83,47 80,49 75,49 L70,49 L70,35 M65,35 L65,73 L70,73 L70,55 L75,55 L80,73 L88,73 L82,55 C86,52 88,48 88,42 C88,36 84,31 75,31 L65,31 Z" />
+
+    <!-- Symbol + (Plus) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M85,55 L90,55 L90,60 L95,60 L95,65 L90,65 L90,70 L85,70 L85,65 L80,65 L80,60 L85,60 Z" />
+
+</vector>
