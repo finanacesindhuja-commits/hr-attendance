@@ -4,7 +4,7 @@
     android:viewportHeight="108"
     android:viewportWidth="108">
 
-    <!-- Premium Small "HR+" Logo Design -->
+    <!-- Clean Small "HR+" Logo Design -->
 
     <!-- Letter H (Modern Green) - Smaller and Centered -->
     <path
@@ -16,7 +16,7 @@
         android:fillColor="#4CAF50"
         android:pathData="M56,45 L64,45 C66,45 68,46 68,49 C68,52 66,53 64,53 L61,53 L61,45 M56,45 L56,65 L61,65 L61,57 L64,57 L68,65 L74,65 L69,57 C72,56 74,54 74,49 C74,44 71,42 64,42 L56,42 Z" />
 
-    <!-- Plus Symbol (Modern Gray Highlight) -->
+    <!-- Plus Symbol (Modern Gray - Side by Side) -->
     <path
         android:fillColor="#757575"
         android:pathData="M75,38 L79,38 L79,42 L83,42 L83,46 L79,46 L79,50 L75,50 L75,46 L71,46 L71,42 L75,42 Z" />
