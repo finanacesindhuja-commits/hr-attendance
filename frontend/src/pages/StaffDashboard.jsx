@@ -369,21 +369,21 @@ function StaffDashboard() {
         </div>
       </div>
 
-      <main className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+      <main className="flex-1 p-4 pt-10 sm:p-6 md:p-10 max-w-4xl mx-auto w-full">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
           <div>
-            <h2 className="text-3xl font-extrabold text-gray-900">Welcome, {staff.name}!</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Welcome, {staff.name}!</h2>
             <p className="text-gray-500 mt-2 font-medium">ID: {staff.staff_id} • {(staff.role || 'Staff').toUpperCase()}</p>
           </div>
-          <div className="bg-indigo-50 border border-indigo-100 px-6 py-4 rounded-2xl flex flex-col items-center min-w-[140px] shadow-inner">
+          <div className="bg-indigo-50 border border-indigo-100 px-6 py-4 rounded-2xl flex flex-col items-center w-full sm:w-auto sm:min-w-[140px] shadow-inner">
             <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Work Days ({new Date().toLocaleString('default', { month: 'short' })})</span>
             <span className="text-4xl font-black text-indigo-600">{workingDays}</span>
           </div>
         </div>
 
         <div className="max-w-xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex flex-col items-center justify-center text-center">
-            <div className="text-5xl font-mono font-bold text-indigo-600 mb-2">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+            <div className="text-4xl xs:text-5xl font-mono font-bold text-indigo-600 mb-2">
               {currentTime.toLocaleTimeString()}
             </div>
             <div className="text-gray-400 font-medium mb-8">
@@ -424,10 +424,10 @@ function StaffDashboard() {
       {/* Profile Modal */}
       {showProfile && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 relative overflow-y-auto max-h-[90vh]">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-6 sm:p-10 relative overflow-y-auto max-h-[90vh]">
             <div className="absolute top-0 left-0 w-full h-24 bg-indigo-600"></div>
             <div className="relative mt-4 flex flex-col items-center">
-              <div className="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center text-4xl font-black text-indigo-600 border-4 border-white mb-6 uppercase">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center text-3xl sm:text-4xl font-black text-indigo-600 border-4 border-white mb-6 uppercase">
                 {staff.name?.charAt(0)}
               </div>
               <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-1">{staff.name}</h3>
