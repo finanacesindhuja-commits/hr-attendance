@@ -16,9 +16,9 @@
         android:fillColor="#2196F3"
         android:pathData="M54,45 L64,45 C68,45 72,47 72,52 C72,57 68,59 64,59 L59,59 L59,65 L54,65 Z M59,50 L59,54 L64,54 C66,54 67,53 67,52 C67,51 66,50 64,50 L59,50 Z M62,59 L72,65 L66,65 L56,59 Z" />
 
-    <!-- Plus Symbol (Blue) -->
+    <!-- Plus Symbol (Gray Highlight) -->
     <path
-        android:fillColor="#2196F3"
+        android:fillColor="#757575"
         android:pathData="M75,38 L79,38 L79,42 L83,42 L83,46 L79,46 L79,50 L75,50 L75,46 L71,46 L71,42 L75,42 Z" />
 
 </vector>
