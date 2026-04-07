@@ -4,21 +4,21 @@
     android:viewportHeight="108"
     android:viewportWidth="108">
 
-    <!-- Premium "HR+" Logo Design (for v24+ devices) -->
+    <!-- Premium Blue "HR+" Design (v24 - Uniform Size) -->
 
-    <!-- Letter H (White) -->
+    <!-- Letter H (Blue) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M22,35 L30,35 L30,50 L42,50 L42,35 L50,35 L50,75 L42,75 L42,58 L30,58 L30,75 L22,75 Z" />
+        android:fillColor="#2196F3"
+        android:pathData="M32,45 L37,45 L37,53 L45,53 L45,45 L50,45 L50,65 L45,65 L45,57 L37,57 L37,65 L32,65 Z" />
 
-    <!-- Letter R (White) -->
+    <!-- Letter R (Blue) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M55,35 L70,35 C75,35 78,38 78,43 C78,48 75,51 70,51 L63,51 L63,35 M55,35 L55,75 L63,75 L63,58 L70,58 L78,75 L88,75 L80,58 C85,56 88,52 88,43 C88,33 82,28 70,28 L55,28 Z" />
+        android:fillColor="#2196F3"
+        android:pathData="M54,45 L64,45 C68,45 72,47 72,52 C72,57 68,59 64,59 L59,59 L59,65 L54,65 Z M59,50 L59,54 L64,54 C66,54 67,53 67,52 C67,51 66,50 64,50 L59,50 Z M62,59 L72,65 L66,65 L56,59 Z" />
 
-    <!-- Stylized Plus Sign (Bright Cyan) -->
+    <!-- Plus Symbol (Gray Highlight) -->
     <path
-        android:fillColor="#00E5FF"
-        android:pathData="M80,30 L86,30 L86,36 L92,36 L92,42 L86,42 L86,48 L80,48 L80,42 L74,42 L74,36 L80,36 Z" />
+        android:fillColor="#757575"
+        android:pathData="M75,38 L79,38 L79,42 L83,42 L83,46 L79,46 L79,50 L75,50 L75,46 L71,46 L71,42 L75,42 Z" />
 
 </vector>

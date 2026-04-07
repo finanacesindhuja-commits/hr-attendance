@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { Geolocation } from '@capacitor/geolocation';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-dx3c.onrender.com';
 const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-dx3c.onrender.com';
@@ -90,7 +91,7 @@ function StaffDashboard() {
   const [socketError, setSocketError] = useState(null);
   const [geoError, setGeoError] = useState(null);
 
-  const startLocationTracking = (staffId, staffName) => {
+  const startLocationTracking = async (staffId, staffName) => {
     if (trackingActive) return;
 
     setSocketError(null);
@@ -105,42 +106,46 @@ function StaffDashboard() {
       setSocketError('Server Connection Failed');
     });
 
-    if (navigator.geolocation) {
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setGeoError(null);
-
-          const locationData = {
-            staff_id: staffId,
-            name: staffName,
-            latitude,
-            longitude
-          };
-
-          // 1. Send via Socket (Instant)
-          if (socket && socket.connected) {
-            socket.emit('staff-location-update', locationData);
+    try {
+      watchIdRef.current = await Geolocation.watchPosition(
+        { enableHighAccuracy: true, maximumAge: 0 },
+        (position, error) => {
+          if (error) {
+            console.error('Geolocation Error:', error);
+            setGeoError('GPS / Permission Denied');
+            return;
           }
+          if (position) {
+            const { latitude, longitude } = position.coords;
+            setGeoError(null);
 
-          // 2. Send via REST (Reliable Fallback to Admin Server)
-          axios.post(`${TRACKING_URL}/staff/update-location`, locationData)
-            .catch(err => console.error('REST location update failed', err));
-        },
-        (error) => {
-          console.error('Geolocation Error:', error);
-          setGeoError('GPS / Permission Denied');
-        },
-        { enableHighAccuracy: true, maximumAge: 0 }
+            const locationData = {
+              staff_id: staffId,
+              name: staffName,
+              latitude,
+              longitude
+            };
+
+            // 1. Send via Socket (Instant)
+            if (socket && socket.connected) {
+              socket.emit('staff-location-update', locationData);
+            }
+
+            // 2. Send via REST (Reliable Fallback to Admin Server)
+            axios.post(`${TRACKING_URL}/staff/update-location`, locationData)
+              .catch(err => console.error('REST location update failed', err));
+          }
+        }
       );
-    } else {
-      setGeoError('GPS not supported');
+    } catch (err) {
+      console.error('Geolocation Error:', err);
+      setGeoError('GPS setup failed');
     }
   };
 
-  const stopLocationTracking = () => {
+  const stopLocationTracking = async () => {
     if (watchIdRef.current) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+      await Geolocation.clearWatch({ id: watchIdRef.current });
       watchIdRef.current = null;
     }
     if (socket) {
@@ -153,12 +158,10 @@ function StaffDashboard() {
   const handleCheckIn = async () => {
     setActionLoading(true);
     try {
-      if (!navigator.geolocation) throw new Error('Geolocation is not supported by your browser');
-
-      const pos = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 // allows up to 1-min old cached location for massive speed boost!
-        });
+      // Prompt for permissions natively just in case
+      await Geolocation.checkPermissions();
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 60000
       });
 
       const { latitude, longitude } = pos.coords;
@@ -179,12 +182,8 @@ function StaffDashboard() {
   const handleCheckOut = async () => {
     setActionLoading(true);
     try {
-      if (!navigator.geolocation) throw new Error('Geolocation is not supported by your browser');
-
-      const pos = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 15000, maximumAge: 60000
-        });
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 60000
       });
 
       const { latitude, longitude } = pos.coords;
@@ -202,20 +201,14 @@ function StaffDashboard() {
     }
   };
 
-  const checkGPSStatus = () => {
-    if (!navigator.geolocation) {
-      alert('❌ GPS is not supported by your browser.');
-      return;
-    }
+  const checkGPSStatus = async () => {
     alert('🔍 Checking GPS... Please wait for the permit pop-up.');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        alert(`✅ GPS Working!\nLat: ${pos.coords.latitude}\nLng: ${pos.coords.longitude}`);
-      },
-      (err) => {
-        alert(`❌ GPS Error: ${err.message}`);
-      }
-    );
+    try {
+      const pos = await Geolocation.getCurrentPosition();
+      alert(`✅ GPS Working!\nLat: ${pos.coords.latitude}\nLng: ${pos.coords.longitude}`);
+    } catch(err) {
+      alert(`❌ GPS Error: ${err.message}`);
+    }
   };
 
   const handleLogout = () => {
