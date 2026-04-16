@@ -4,8 +4,8 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Geolocation } from '@capacitor/geolocation';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5002';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5001';
 
 let socket;
 
@@ -629,14 +629,65 @@ function StaffDashboard() {
               <div className="w-full space-y-3 mb-6">
                 {payslips.length > 0 ? (
                   payslips.map((pay, idx) => (
-                    <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center text-left">
-                      <div>
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{pay.month_year}</p>
-                        <p className="text-sm font-black text-gray-900 mt-0.5">₹{pay.net_salary}</p>
+                    <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="text-xs font-black text-indigo-500 uppercase tracking-widest">{pay.month_year} PAYSLIP</p>
+                          <p className="text-sm font-black text-gray-900 mt-0.5">Net Pay: ₹{pay.net_salary}</p>
+                        </div>
+                        <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-1 rounded-lg border border-green-200">
+                          {pay.status || 'Paid'}
+                        </span>
                       </div>
-                      <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-1 rounded-lg border border-green-200">
-                        {pay.status}
-                      </span>
+                      <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Present Days</p>
+                          <p className="text-xs font-black text-gray-800">{pay.present_days || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Gross Salary</p>
+                          <p className="text-xs font-black text-gray-800">₹{pay.gross_salary || pay.base_salary}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Deductions</p>
+                          <p className="text-xs font-black text-red-500">- ₹{pay.deductions || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Net Salary</p>
+                          <p className="text-xs font-black text-green-600">₹{pay.net_salary}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const docContent = `
+                            SINDHUJA FINANCE
+                            -----------------------------
+                            PAYSLIP FOR ${pay.month_year}
+                            -----------------------------
+                            Staff ID:     ${staff.staff_id}
+                            Staff Name:   ${staff.name}
+                            Designation:  ${staff.role || 'Staff'}
+
+                            Present Days: ${pay.present_days || 0}
+                            Gross Salary: Rs. ${pay.gross_salary || pay.base_salary}
+                            Deductions:   Rs. ${pay.deductions || 0}
+                            Net Salary:   Rs. ${pay.net_salary}
+                            Status:       ${pay.status || 'Paid'}
+
+                            Note: This is a computer-generated document.
+                          `.trim().replace(/^ +/gm, '');
+
+                          const blob = new Blob([docContent], { type: 'text/plain' });
+                          const link = document.createElement('a');
+                          link.href = URL.createObjectURL(blob);
+                          link.download = `Payslip_${staff.staff_id}_${pay.month_year}.txt`;
+                          link.click();
+                        }}
+                        className="w-full py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-100 transition-all border border-indigo-100 flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Download Receipt
+                      </button>
                     </div>
                   ))
                 ) : (

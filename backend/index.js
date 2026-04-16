@@ -292,6 +292,23 @@ app.get('/staff/profile/:staff_id', async (req, res) => {
     res.json(data || null);
 });
 
+// Fetch Staff Payslips
+app.get('/staff/payslips/:staff_id', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('salary_payments')
+            .select('*')
+            .eq('staff_id', req.params.staff_id)
+            .order('month_year', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        console.error('❌ Payslips Fetch Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Police Verification Upload
 app.post('/staff/upload-verification', async (req, res) => {
     try {
