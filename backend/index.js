@@ -281,6 +281,46 @@ app.post('/staff/upload-verification', async (req, res) => {
     }
 });
 
+// LEAVE APPLICATION ENDPOINTS
+app.post('/staff/leave/apply', async (req, res) => {
+    try {
+        const { staff_id, start_date, end_date, reason } = req.body;
+        const { data, error } = await supabase
+            .from('staff_leaves')
+            .insert([{
+                staff_id,
+                start_date,
+                end_date,
+                reason,
+                status: 'Pending'
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.json({ message: 'Leave application submitted successfully', leave: data });
+    } catch (err) {
+        console.error('❌ Leave Application Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/staff/leave/history/:staff_id', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('staff_leaves')
+            .select('*')
+            .eq('staff_id', req.params.staff_id)
+            .order('start_date', { ascending: false });
+
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        console.error('❌ Leave History Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 http.listen(port, async () => {

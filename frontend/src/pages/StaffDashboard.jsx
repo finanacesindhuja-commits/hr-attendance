@@ -4,8 +4,9 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Geolocation } from '@capacitor/geolocation';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-dx3c.onrender.com';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-dx3c.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5002';
+
 let socket;
 
 function StaffDashboard() {
@@ -22,6 +23,10 @@ function StaffDashboard() {
   const [showLeave, setShowLeave] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showApplyLeave, setShowApplyLeave] = useState(false);
+  const [leaveHistory, setLeaveHistory] = useState([]);
+  const [leaveData, setLeaveData] = useState({ start_date: '', end_date: '', reason: '' });
+  const [payslips, setPayslips] = useState([]);
   const dropdownRef = useRef(null);
   const watchIdRef = useRef(null);
   const navigate = useNavigate();
@@ -60,6 +65,50 @@ function StaffDashboard() {
       startLocationTracking(staff.staff_id, staff.name);
     }
   }, [attendance, staff, trackingActive]);
+
+  useEffect(() => {
+    if (showPaySlip && staff) {
+      fetchPayslips(staff.staff_id);
+    }
+  }, [showPaySlip, staff]);
+
+  const fetchPayslips = async (staffId) => {
+    try {
+      const res = await axios.get(`${API_URL}/staff/payslips/${staffId}`);
+      setPayslips(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch payslips', err);
+    }
+  };
+
+  const fetchLeaveHistory = async (staffId) => {
+    try {
+      const res = await axios.get(`${API_URL}/staff/leave/history/${staffId}`);
+      setLeaveHistory(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch leave history', err);
+    }
+  };
+
+  const handleApplyLeave = async (e) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      await axios.post(`${API_URL}/staff/leave/apply`, {
+        staff_id: staff.staff_id,
+        ...leaveData
+      });
+      alert('Leave application submitted successfully!');
+      setShowApplyLeave(false);
+      setLeaveData({ start_date: '', end_date: '', reason: '' });
+      fetchLeaveHistory(staff.staff_id);
+    } catch (err) {
+      alert('Failed to submit leave: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
   const fetchAttendanceStatus = async (staffId) => {
     try {
@@ -286,6 +335,13 @@ function StaffDashboard() {
                 >
                   <span className="text-lg">📄</span> Terms & Conditions
                 </button>
+                <div className="h-px bg-gray-100 mx-2"></div>
+                <button
+                  onClick={() => { setIsDropdownOpen(false); setShowApplyLeave(true); fetchLeaveHistory(staff.staff_id); }}
+                  className="w-full text-left px-4 py-3 text-sm font-bold text-gray-700 hover:bg-indigo-50 hover:text-red-600 flex items-center gap-3 transition-colors"
+                >
+                  <span className="text-lg">✉️</span> Apply Leave
+                </button>
               </div>
             )}
           </div>
@@ -349,6 +405,12 @@ function StaffDashboard() {
               className="w-full flex items-center gap-4 px-4 py-4 text-gray-700 font-black text-xs uppercase tracking-widest hover:bg-indigo-50 hover:text-orange-600 rounded-2xl transition-all"
             >
               <span className="text-lg">🗓️</span> Govt Holidays
+            </button>
+            <button
+              onClick={() => { setIsSidebarOpen(false); setShowApplyLeave(true); fetchLeaveHistory(staff.staff_id); }}
+              className="w-full flex items-center gap-4 px-4 py-4 text-gray-700 font-black text-xs uppercase tracking-widest hover:bg-indigo-50 hover:text-red-600 rounded-2xl transition-all"
+            >
+              <span className="text-lg">✉️</span> Apply Leave
             </button>
             <div className="pt-4 mt-4 border-t border-gray-100">
               <button
@@ -564,15 +626,32 @@ function StaffDashboard() {
               <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">My Pay Slips</h3>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-8">Salary & Payouts</p>
 
-              <div className="w-full bg-gray-50 rounded-2xl p-8 border border-gray-100 border-dashed mb-6">
-                <div className="text-gray-400 mb-3 block">
-                  <svg className="w-10 h-10 mx-auto opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-bold text-gray-500">Pay slips are not generated yet.</p>
-                <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-wider">Check back after billing cycle</p>
+              <div className="w-full space-y-3 mb-6">
+                {payslips.length > 0 ? (
+                  payslips.map((pay, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex justify-between items-center text-left">
+                      <div>
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{pay.month_year}</p>
+                        <p className="text-sm font-black text-gray-900 mt-0.5">₹{pay.net_salary}</p>
+                      </div>
+                      <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase px-2 py-1 rounded-lg border border-green-200">
+                        {pay.status}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="w-full bg-gray-50 rounded-2xl p-8 border border-gray-100 border-dashed">
+                    <div className="text-gray-400 mb-3 block">
+                      <svg className="w-10 h-10 mx-auto opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-bold text-gray-500">Pay slips are not generated yet.</p>
+                    <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-wider">Check back after billing cycle</p>
+                  </div>
+                )}
               </div>
+
 
               <button onClick={() => setShowPaySlip(false)} className="w-full mt-4 py-4 bg-gray-900 text-white rounded-[1.2rem] font-black uppercase tracking-widest text-xs hover:bg-gray-800 transition-all active:scale-95 shadow-lg">
                 Go Back
@@ -618,6 +697,96 @@ function StaffDashboard() {
               <button onClick={() => setShowLeave(false)} className="w-full py-4 bg-gray-900 text-white rounded-[1.2rem] font-black uppercase tracking-widest text-xs hover:bg-gray-800 transition-all active:scale-95 shadow-lg">
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Apply Leave Modal */}
+      {showApplyLeave && (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg p-6 sm:p-10 relative overflow-y-auto max-h-[90vh]">
+            <div className="flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Apply for Leave</h3>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Submit your request</p>
+                </div>
+                <button onClick={() => setShowApplyLeave(false)} className="p-2 hover:bg-gray-100 rounded-xl">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleApplyLeave} className="space-y-4 mb-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      required
+                      className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-bold text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                      value={leaveData.start_date}
+                      onChange={(e) => setLeaveData({ ...leaveData, start_date: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">End Date</label>
+                    <input
+                      type="date"
+                      required
+                      className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl font-bold text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                      value={leaveData.end_date}
+                      onChange={(e) => setLeaveData({ ...leaveData, end_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reason for Leave</label>
+                  <textarea
+                    required
+                    rows="3"
+                    placeholder="Enter short reason here..."
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl font-medium text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none"
+                    value={leaveData.reason}
+                    onChange={(e) => setLeaveData({ ...leaveData, reason: e.target.value })}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Submitting...' : 'Submit Application 🚀'}
+                </button>
+              </form>
+
+              <div className="pt-6 border-t border-gray-100">
+                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Your Recent Leave Requests</h4>
+                <div className="space-y-3">
+                  {leaveHistory.length > 0 ? (
+                    leaveHistory.slice(0, 5).map((leave, idx) => (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex justify-between items-center group">
+                        <div className="text-left">
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-tight">
+                            {new Date(leave.start_date).toLocaleDateString()} - {new Date(leave.end_date).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs font-bold text-gray-900 mt-0.5 line-clamp-1">{leave.reason}</p>
+                        </div>
+                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
+                          leave.status === 'Approved' ? 'bg-green-100 text-green-700 border-green-200' :
+                          leave.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' :
+                          'bg-amber-100 text-amber-700 border-amber-200'
+                        }`}>
+                          {leave.status}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest text-center py-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">No leave requests found.</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

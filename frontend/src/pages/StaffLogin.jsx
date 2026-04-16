@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-dx3c.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 
 function StaffLogin() {
   const [staffId, setStaffId] = useState('');
@@ -46,7 +46,7 @@ function StaffLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Stff attendence Portal</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Staff Attendance Portal</h1>
           <p className="text-gray-500 mt-2">Log in to manage your attendance</p>
         </div>
 
