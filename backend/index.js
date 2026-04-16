@@ -225,8 +225,66 @@ app.get('/staff/attendance/status/:staff_id', async (req, res) => {
 });
 
 app.get('/staff/attendance/history/:staff_id', async (req, res) => {
-    const { data } = await supabase.from('staff_attendance').select('*').eq('staff_id', req.params.staff_id).order('date', { ascending: false });
-    res.json(data || []);
+    try {
+        const { staff_id } = req.params;
+        
+        // 1. Fetch Actual Attendance
+        const { data: attendanceData, error: attError } = await supabase
+            .from('staff_attendance')
+            .select('*')
+            .eq('staff_id', staff_id);
+            
+        if (attError) throw attError;
+
+        // 2. Fetch Leave Applications
+        const { data: leaveData, error: leaveError } = await supabase
+            .from('staff_leaves')
+            .select('*')
+            .eq('staff_id', staff_id);
+            
+        if (leaveError) {
+            // If table doesn't exist, we might get an error. 
+            // In that case, just return attendance data.
+            console.warn("⚠️ Could not fetch leaves for history (table might be missing or locked).");
+            return res.json(attendanceData || []);
+        }
+
+        const combinedHistory = [...(attendanceData || [])];
+        const existingDates = new Set(attendanceData.map(a => a.date));
+
+        // 3. Process Leaves into daily entries
+        leaveData?.forEach(leave => {
+            let start = new Date(leave.start_date);
+            let end = new Date(leave.end_date);
+            
+            // Iterate through every day of the leave
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                
+                // Only add leave record if no actual check-in exists for that day
+                if (!existingDates.has(dateStr)) {
+                    combinedHistory.push({
+                        id: `leave-${leave.id}-${dateStr}`,
+                        date: dateStr,
+                        staff_id: staff_id,
+                        check_in: null,
+                        check_out: null,
+                        status: leave.status === 'Approved' ? 'LEAVE' : 
+                                leave.status === 'Rejected' ? 'REJECTED' : 'PENDING LEAVE',
+                        is_leave: true
+                    });
+                }
+            }
+        });
+
+        // 4. Sort by date Descending
+        combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json(combinedHistory);
+    } catch (err) {
+        console.error('❌ History Fetch Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.get('/staff/profile/:staff_id', async (req, res) => {

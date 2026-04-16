@@ -81,7 +81,12 @@ export default function AttendanceHistory() {
                       {formatTime(record.check_out)}
                     </td>
                     <td className="px-8 py-6">
-                      <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-xl text-[10px] font-black uppercase tracking-wider">
+                      <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
+                        record.status === 'present' ? 'bg-green-100 text-green-700' :
+                        record.status === 'LEAVE' ? 'bg-blue-100 text-blue-700' :
+                        record.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
                         {record.status}
                       </span>
                     </td>
