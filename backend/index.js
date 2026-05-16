@@ -294,6 +294,7 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             .sort((a, b) => new Date(b.date) - new Date(a.date));
 
         console.log(`🚀 Sending ${finalHistory.length} records to client (Filtered from ${combinedHistory.length})`);
+        res.setHeader('X-Debug-Version', 'current-month-only-v2');
         res.json(finalHistory);
     } catch (err) {
         console.error('❌ History Fetch Error:', err.message);
