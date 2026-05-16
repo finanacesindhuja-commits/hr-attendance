@@ -471,7 +471,7 @@ function StaffDashboard() {
                   className="w-full py-6 sm:py-8 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg md:text-xl rounded-[1.5rem] shadow-2xl shadow-emerald-200 transform hover:-translate-y-1 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform animate-wave">👋</span>
-                  {actionLoading ? 'Processing...' : 'START WORK DAY (CHECK-IN)'}
+                  {actionLoading ? 'Processing...' : 'CHECK-IN'}
                 </button>
               ) : attendance && !attendance.check_out ? (
                 <button
@@ -480,7 +480,7 @@ function StaffDashboard() {
                   className="w-full py-6 sm:py-8 bg-rose-500 hover:bg-rose-600 text-white font-black text-lg md:text-xl rounded-[1.5rem] shadow-2xl shadow-rose-200 transform hover:-translate-y-1 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <span className="text-3xl md:text-4xl group-hover:animate-pulse-slow">🛑</span>
-                  {actionLoading ? 'Processing...' : 'END WORK DAY (CHECK-OUT)'}
+                  {actionLoading ? 'Processing...' : 'CHECK-OUT'}
                 </button>
               ) : (
                 <div className="w-full py-6 sm:py-8 bg-slate-50 border-2 border-slate-200 text-slate-400 font-black text-lg md:text-xl rounded-[1.5rem] flex flex-col items-center justify-center gap-2">
