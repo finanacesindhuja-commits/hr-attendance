@@ -27,6 +27,7 @@ function StaffDashboard() {
   const [leaveHistory, setLeaveHistory] = useState([]);
   const [leaveData, setLeaveData] = useState({ start_date: '', end_date: '', reason: '' });
   const [payslips, setPayslips] = useState([]);
+  const [selectedPayslip, setSelectedPayslip] = useState(null);
   const dropdownRef = useRef(null);
   const watchIdRef = useRef(null);
   const navigate = useNavigate();
@@ -629,7 +630,11 @@ function StaffDashboard() {
               <div className="w-full space-y-3 mb-6">
                 {payslips.length > 0 ? (
                   payslips.map((pay, idx) => (
-                    <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left">
+                    <div 
+                      key={idx} 
+                      onClick={() => setSelectedPayslip(pay)}
+                      className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left hover:border-indigo-400 cursor-pointer transition-all active:scale-[0.98]"
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <p className="text-xs font-black text-indigo-500 uppercase tracking-widest">{pay.month_year} PAYSLIP</p>
@@ -639,55 +644,10 @@ function StaffDashboard() {
                           {pay.status || 'Paid'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Present Days</p>
-                          <p className="text-xs font-black text-gray-800">{pay.present_days || 0}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Gross Salary</p>
-                          <p className="text-xs font-black text-gray-800">₹{pay.gross_salary || pay.base_salary}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Deductions</p>
-                          <p className="text-xs font-black text-red-500">- ₹{pay.deductions || 0}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">Net Salary</p>
-                          <p className="text-xs font-black text-green-600">₹{pay.net_salary}</p>
-                        </div>
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        <span>Click to View Details</span>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                       </div>
-                      <button
-                        onClick={() => {
-                          const docContent = `
-                            SINDHUJA FINANCE
-                            -----------------------------
-                            PAYSLIP FOR ${pay.month_year}
-                            -----------------------------
-                            Staff ID:     ${staff.staff_id}
-                            Staff Name:   ${staff.name}
-                            Designation:  ${staff.role || 'Staff'}
-
-                            Present Days: ${pay.present_days || 0}
-                            Gross Salary: Rs. ${pay.gross_salary || pay.base_salary}
-                            Deductions:   Rs. ${pay.deductions || 0}
-                            Net Salary:   Rs. ${pay.net_salary}
-                            Status:       ${pay.status || 'Paid'}
-
-                            Note: This is a computer-generated document.
-                          `.trim().replace(/^ +/gm, '');
-
-                          const blob = new Blob([docContent], { type: 'text/plain' });
-                          const link = document.createElement('a');
-                          link.href = URL.createObjectURL(blob);
-                          link.download = `Payslip_${staff.staff_id}_${pay.month_year}.txt`;
-                          link.click();
-                        }}
-                        className="w-full py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-100 transition-all border border-indigo-100 flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Download Receipt
-                      </button>
                     </div>
                   ))
                 ) : (
@@ -838,6 +798,112 @@ function StaffDashboard() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Detailed Payslip Modal */}
+      {selectedPayslip && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center p-4 z-[60] animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden relative border border-white/20">
+            {/* Header with Pattern */}
+            <div className="bg-indigo-600 p-8 text-white relative">
+              <div className="relative z-10 text-center">
+                <h2 className="text-3xl font-black uppercase tracking-tighter mb-1">SINDHUJA FINANCE</h2>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-80">Salary Payment Receipt</p>
+              </div>
+              {/* Decorative circles */}
+              <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl"></div>
+            </div>
+
+            <div className="p-8">
+              {/* Receipt Info */}
+              <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Billing Cycle</p>
+                  <p className="text-lg font-black text-gray-900">{selectedPayslip.month_year}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</p>
+                  <p className="text-sm font-black text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 uppercase">{selectedPayslip.status || 'Paid'}</p>
+                </div>
+              </div>
+
+              {/* Table Style Details */}
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Staff Name</span>
+                  <span className="font-black text-gray-800">{staff.name}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Staff ID</span>
+                  <span className="font-mono font-black text-gray-800">{staff.staff_id}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Designation</span>
+                  <span className="font-black text-gray-800 uppercase">{staff.role || 'Staff'}</span>
+                </div>
+                <div className="h-px bg-gray-100 my-4"></div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Days Present</span>
+                  <span className="font-black text-gray-800">{selectedPayslip.present_days || 0} Days</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Gross Salary</span>
+                  <span className="font-black text-gray-800">₹{selectedPayslip.gross_salary || selectedPayslip.base_salary}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-bold text-gray-400">Deductions</span>
+                  <span className="font-black text-rose-500">- ₹{selectedPayslip.deductions || 0}</span>
+                </div>
+                <div className="h-px bg-gray-100 my-4 border-dashed"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-gray-900 uppercase">Net Pay Amount</span>
+                  <span className="text-2xl font-black text-green-600">₹{selectedPayslip.net_salary}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    const docContent = `
+                      SINDHUJA FINANCE
+                      -----------------------------
+                      PAYSLIP FOR ${selectedPayslip.month_year}
+                      -----------------------------
+                      Staff ID:     ${staff.staff_id}
+                      Staff Name:   ${staff.name}
+                      Designation:  ${staff.role || 'Staff'}
+
+                      Present Days: ${selectedPayslip.present_days || 0}
+                      Gross Salary: Rs. ${selectedPayslip.gross_salary || selectedPayslip.base_salary}
+                      Deductions:   Rs. ${selectedPayslip.deductions || 0}
+                      Net Salary:   Rs. ${selectedPayslip.net_salary}
+                      Status:       ${selectedPayslip.status || 'Paid'}
+
+                      Note: This is a computer-generated document.
+                    `.trim().replace(/^ +/gm, '');
+
+                    const blob = new Blob([docContent], { type: 'text/plain' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `Payslip_${staff.staff_id}_${selectedPayslip.month_year}.txt`;
+                    link.click();
+                  }}
+                  className="py-4 bg-indigo-50 text-indigo-600 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-100 transition-all border border-indigo-100"
+                >
+                  Download
+                </button>
+                <button 
+                  onClick={() => setSelectedPayslip(null)}
+                  className="py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-800 transition-all"
+                >
+                  Close
+                </button>
+              </div>
+              <p className="text-[8px] text-center text-gray-400 mt-6 font-bold uppercase tracking-widest">© Sindhuja Finance Management System</p>
             </div>
           </div>
         </div>
