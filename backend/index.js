@@ -232,7 +232,6 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
         const offset = 5.5 * 60 * 60 * 1000;
         const now = new Date(Date.now() + offset);
         const dateLimit = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-        console.log(`📅 Fetching history for ${staff_id} from ${dateLimit}`);
         
         // 1. Fetch Actual Attendance (Current Month Only)
         const { data: attendanceData, error: attError } = await supabase
@@ -242,7 +241,6 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             .gte('date', dateLimit);
             
         if (attError) throw attError;
-        console.log(`✅ Found ${attendanceData?.length || 0} attendance records`);
 
         // 2. Fetch Leave Applications (Current Month Only)
         const { data: leaveData, error: leaveError } = await supabase
@@ -250,8 +248,6 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             .select('*')
             .eq('staff_id', staff_id)
             .gte('end_date', dateLimit);
-            
-        console.log(`✅ Found ${leaveData?.length || 0} leave records`);
             
         if (leaveError) {
             // If table doesn't exist, we might get an error. 
@@ -293,8 +289,6 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             .filter(item => item.date >= dateLimit)
             .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        console.log(`🚀 Sending ${finalHistory.length} records to client (Filtered from ${combinedHistory.length})`);
-        res.setHeader('X-Debug-Version', 'current-month-only-v2');
         res.json(finalHistory);
     } catch (err) {
         console.error('❌ History Fetch Error:', err.message);
