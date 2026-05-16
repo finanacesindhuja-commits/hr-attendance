@@ -9,12 +9,21 @@ export default function AttendanceHistory() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [joiningDate, setJoiningDate] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const info = localStorage.getItem('staffInfo');
     if (!info) { navigate('/login'); return; }
     const parsed = JSON.parse(info);
+    
+    // Extract joining date (default to 2024-01-01 if missing)
+    if (parsed.created_at) {
+      setJoiningDate(new Date(parsed.created_at));
+    } else {
+      setJoiningDate(new Date('2024-01-01'));
+    }
+
     fetchHistory(parsed.staff_id, selectedMonth, selectedYear);
   }, [navigate, selectedMonth, selectedYear]);
 
@@ -77,11 +86,20 @@ export default function AttendanceHistory() {
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
               className="bg-white border-2 border-gray-100 rounded-2xl px-4 py-2 font-bold text-gray-700 outline-none focus:border-indigo-600 transition-all cursor-pointer"
             >
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                </option>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => {
+                const m = i + 1;
+                const now = new Date();
+                const isFuture = selectedYear === now.getFullYear() && m > now.getMonth() + 1;
+                const isBeforeJoining = joiningDate && selectedYear === joiningDate.getFullYear() && m < joiningDate.getMonth() + 1;
+                
+                if (isFuture || isBeforeJoining) return null;
+                
+                return (
+                  <option key={m} value={m}>
+                    {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                  </option>
+                );
+              })}
             </select>
 
             <select 
@@ -89,9 +107,15 @@ export default function AttendanceHistory() {
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               className="bg-white border-2 border-gray-100 rounded-2xl px-4 py-2 font-bold text-gray-700 outline-none focus:border-indigo-600 transition-all cursor-pointer"
             >
-              {[2024, 2025, 2026].map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+              {(() => {
+                const startYear = joiningDate ? joiningDate.getFullYear() : 2024;
+                const currentYear = new Date().getFullYear();
+                const years = [];
+                for (let y = startYear; y <= currentYear; y++) years.push(y);
+                return years.map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ));
+              })()}
             </select>
           </div>
         </div>
