@@ -439,6 +439,23 @@ function StaffDashboard() {
 
         <div className="max-w-xl mx-auto">
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+            <style>{`
+              @keyframes wave {
+                0% { transform: rotate( 0.0deg) }
+                10% { transform: rotate(14.0deg) }
+                20% { transform: rotate(-8.0deg) }
+                30% { transform: rotate(14.0deg) }
+                40% { transform: rotate(-4.0deg) }
+                50% { transform: rotate(10.0deg) }
+                60% { transform: rotate( 0.0deg) }
+                100% { transform: rotate( 0.0deg) }
+              }
+              .animate-wave {
+                animation: wave 2s infinite;
+                transform-origin: 70% 70%;
+                display: inline-block;
+              }
+            `}</style>
             <div className="text-4xl xs:text-5xl font-mono font-bold text-indigo-600 mb-2">
               {currentTime.toLocaleTimeString()}
             </div>
@@ -453,7 +470,7 @@ function StaffDashboard() {
                   disabled={actionLoading}
                   className="w-full py-6 sm:py-8 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg md:text-xl rounded-[1.5rem] shadow-2xl shadow-emerald-200 transform hover:-translate-y-1 active:scale-95 transition-all flex flex-col items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  <span className="text-3xl md:text-4xl group-hover:animate-rotate-jump">👋</span>
+                  <span className="text-3xl md:text-4xl group-hover:scale-110 transition-transform animate-wave">👋</span>
                   {actionLoading ? 'Processing...' : 'START WORK DAY (CHECK-IN)'}
                 </button>
               ) : attendance && !attendance.check_out ? (
