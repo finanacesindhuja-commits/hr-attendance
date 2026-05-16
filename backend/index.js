@@ -229,16 +229,29 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
         const { staff_id } = req.params;
         
         // Calculate the 1st day of the current month in IST
-        const offset = 5.5 * 60 * 60 * 1000;
-        const now = new Date(Date.now() + offset);
-        const dateLimit = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const { month, year } = req.query; // Optional: ?month=5&year=2026
+        
+        const istNow = new Date(Date.now() + (5.5 * 60 * 60 * 1000));
+        const currentMonth = istNow.getMonth() + 1;
+        const currentYear = istNow.getFullYear();
+
+        const targetMonth = month ? parseInt(month) : currentMonth;
+        const targetYear = year ? parseInt(year) : currentYear;
+
+        const dateLimit = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
+        
+        // Calculate end of the selected month
+        const nextMonth = targetMonth === 12 ? 1 : targetMonth + 1;
+        const nextYear = targetMonth === 12 ? targetYear + 1 : targetYear;
+        const nextMonthLimit = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
         
         // 1. Fetch Actual Attendance (Current Month Only)
         const { data: attendanceData, error: attError } = await supabase
             .from('staff_attendance')
             .select('*')
             .eq('staff_id', staff_id)
-            .gte('date', dateLimit);
+            .gte('date', dateLimit)
+            .lt('date', nextMonthLimit);
             
         if (attError) throw attError;
 
@@ -247,7 +260,8 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             .from('staff_leaves')
             .select('*')
             .eq('staff_id', staff_id)
-            .gte('end_date', dateLimit);
+            .gte('end_date', dateLimit)
+            .lte('start_date', nextMonthLimit);
             
         if (leaveError) {
             // If table doesn't exist, we might get an error. 
@@ -284,9 +298,9 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             }
         });
 
-        // 4. Sort by date Descending and apply a final foolproof filter for current month
+        // 4. Sort by date Descending and apply a final foolproof filter for the selected month
         const finalHistory = combinedHistory
-            .filter(item => item.date >= dateLimit)
+            .filter(item => item.date >= dateLimit && item.date < nextMonthLimit)
             .sort((a, b) => new Date(b.date) - new Date(a.date));
 
         res.json(finalHistory);
@@ -391,15 +405,25 @@ app.post('/staff/leave/apply', async (req, res) => {
 
 app.get('/staff/leave/history/:staff_id', async (req, res) => {
     try {
-        const offset = 5.5 * 60 * 60 * 1000;
-        const now = new Date(Date.now() + offset);
-        const dateLimit = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const { month, year } = req.query;
+        const istNow = new Date(Date.now() + (5.5 * 60 * 60 * 1000));
+        const currentMonth = istNow.getMonth() + 1;
+        const currentYear = istNow.getFullYear();
+
+        const targetMonth = month ? parseInt(month) : currentMonth;
+        const targetYear = year ? parseInt(year) : currentYear;
+
+        const dateLimit = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
+        const nextMonth = targetMonth === 12 ? 1 : targetMonth + 1;
+        const nextYear = targetMonth === 12 ? targetYear + 1 : targetYear;
+        const nextMonthLimit = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
 
         const { data, error } = await supabase
             .from('staff_leaves')
             .select('*')
             .eq('staff_id', req.params.staff_id)
             .gte('end_date', dateLimit)
+            .lte('start_date', nextMonthLimit)
             .order('start_date', { ascending: false });
 
         if (error) throw error;

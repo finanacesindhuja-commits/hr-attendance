@@ -7,18 +7,23 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 export default function AttendanceHistory() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const navigate = useNavigate();
 
   useEffect(() => {
     const info = localStorage.getItem('staffInfo');
     if (!info) { navigate('/login'); return; }
     const parsed = JSON.parse(info);
-    fetchHistory(parsed.staff_id);
-  }, [navigate]);
+    fetchHistory(parsed.staff_id, selectedMonth, selectedYear);
+  }, [navigate, selectedMonth, selectedYear]);
 
-  const fetchHistory = async (staffId) => {
+  const fetchHistory = async (staffId, month, year) => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${API}/staff/attendance/history/${staffId}`);
+      const res = await axios.get(`${API}/staff/attendance/history/${staffId}`, {
+        params: { month, year }
+      });
       setHistory(res.data);
     } catch (e) {
       console.error(e);
@@ -57,6 +62,40 @@ export default function AttendanceHistory() {
       </nav>
 
       <main className="max-w-4xl mx-auto p-4 md:p-8">
+        {/* Month Selector */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">Showing Logs For</h2>
+            <p className="text-2xl font-bold text-gray-900">
+              {new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <select 
+              value={selectedMonth} 
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="bg-white border-2 border-gray-100 rounded-2xl px-4 py-2 font-bold text-gray-700 outline-none focus:border-indigo-600 transition-all cursor-pointer"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="bg-white border-2 border-gray-100 rounded-2xl px-4 py-2 font-bold text-gray-700 outline-none focus:border-indigo-600 transition-all cursor-pointer"
+            >
+              {[2024, 2025, 2026].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="bg-white rounded-3xl shadow-sm border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
