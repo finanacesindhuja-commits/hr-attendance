@@ -228,19 +228,30 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
     try {
         const { staff_id } = req.params;
         
-        // 1. Fetch Actual Attendance
+        // Calculate the 1st day of the current month in IST
+        const offset = 5.5 * 60 * 60 * 1000;
+        const now = new Date(Date.now() + offset);
+        const dateLimit = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        console.log(`📅 Fetching history for ${staff_id} from ${dateLimit}`);
+        
+        // 1. Fetch Actual Attendance (Current Month Only)
         const { data: attendanceData, error: attError } = await supabase
             .from('staff_attendance')
             .select('*')
-            .eq('staff_id', staff_id);
+            .eq('staff_id', staff_id)
+            .gte('date', dateLimit);
             
         if (attError) throw attError;
+        console.log(`✅ Found ${attendanceData?.length || 0} attendance records`);
 
-        // 2. Fetch Leave Applications
+        // 2. Fetch Leave Applications (Current Month Only)
         const { data: leaveData, error: leaveError } = await supabase
             .from('staff_leaves')
             .select('*')
-            .eq('staff_id', staff_id);
+            .eq('staff_id', staff_id)
+            .gte('end_date', dateLimit);
+            
+        console.log(`✅ Found ${leaveData?.length || 0} leave records`);
             
         if (leaveError) {
             // If table doesn't exist, we might get an error. 
@@ -261,8 +272,8 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                 const dateStr = d.toISOString().split('T')[0];
                 
-                // Only add leave record if no actual check-in exists for that day
-                if (!existingDates.has(dateStr)) {
+                // Only add leave record if no actual check-in exists for that day AND it's in current month
+                if (!existingDates.has(dateStr) && dateStr >= dateLimit) {
                     combinedHistory.push({
                         id: `leave-${leave.id}-${dateStr}`,
                         date: dateStr,
@@ -277,10 +288,13 @@ app.get('/staff/attendance/history/:staff_id', async (req, res) => {
             }
         });
 
-        // 4. Sort by date Descending
-        combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // 4. Sort by date Descending and apply a final foolproof filter for current month
+        const finalHistory = combinedHistory
+            .filter(item => item.date >= dateLimit)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        res.json(combinedHistory);
+        console.log(`🚀 Sending ${finalHistory.length} records to client (Filtered from ${combinedHistory.length})`);
+        res.json(finalHistory);
     } catch (err) {
         console.error('❌ History Fetch Error:', err.message);
         res.status(500).json({ error: err.message });
@@ -382,10 +396,15 @@ app.post('/staff/leave/apply', async (req, res) => {
 
 app.get('/staff/leave/history/:staff_id', async (req, res) => {
     try {
+        const offset = 5.5 * 60 * 60 * 1000;
+        const now = new Date(Date.now() + offset);
+        const dateLimit = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
         const { data, error } = await supabase
             .from('staff_leaves')
             .select('*')
             .eq('staff_id', req.params.staff_id)
+            .gte('end_date', dateLimit)
             .order('start_date', { ascending: false });
 
         if (error) throw error;
