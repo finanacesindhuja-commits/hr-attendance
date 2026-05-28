@@ -1,4 +1,6 @@
 const express = require('express');
+const compression = require('compression');
+const NodeCache = require('node-cache');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,6 +8,25 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
+
+const cache = new NodeCache({ stdTTL: 15 });
+const flushCache = () => cache.flushAll();
+const cacheMiddleware = (duration = 15) => (req, res, next) => {
+  if (req.method !== 'GET') return next();
+  const key = req.originalUrl;
+  const cachedResponse = cache.get(key);
+  if (cachedResponse) return res.json(cachedResponse);
+  res.sendResponse = res.json;
+  res.json = (body) => {
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      cache.set(key, body, duration);
+    }
+    res.sendResponse(body);
+  };
+  next();
+};
+
+app.use(compression());
 const http = require('http').createServer(app);
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -52,6 +73,16 @@ process.on('unhandledRejection', (reason, promise) => {
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method) && res.statusCode >= 200 && res.statusCode < 300) {
+      flushCache();
+    }
+  });
+  next();
+});
+
 app.use(fileUpload());
 
 // In-memory store for live staff locations (pure real-time)
