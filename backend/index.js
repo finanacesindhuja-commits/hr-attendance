@@ -180,7 +180,7 @@ app.post('/staff/login', async (req, res) => {
   try {
     const { staff_id, password } = req.body;
     console.log(`🔑 Login attempt for: ${staff_id}`);
-    const { data: staff, error } = await supabase.from('staff').select('*').ilike('staff_id', staff_id).single();
+    const { data: staff, error } = await supabase.from('staff').select('*').eq('staff_id', String(staff_id || '').trim().toUpperCase()).single();
     if (error || !staff || staff.password !== password) {
       console.log(`❌ Login failed for ID: ${staff_id}. DB Match: ${!!staff}, Password Match: ${staff?.password === password}`);
       return res.status(401).json({ error: 'Invalid Staff ID or password' });
