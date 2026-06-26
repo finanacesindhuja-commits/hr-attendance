@@ -410,6 +410,53 @@ app.post('/staff/upload-verification', async (req, res) => {
     }
 });
 
+// Passbook Upload
+app.post('/staff/upload-passbook', async (req, res) => {
+    try {
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ error: 'No files were uploaded.' });
+        }
+
+        const { staff_id } = req.body;
+        const uploadFile = req.files.passbookFile;
+        const fileExt = uploadFile.name.split('.').pop();
+        const fileName = `${staff_id}_passbook_${Date.now()}.${fileExt}`;
+
+        // 1. Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('passbook')
+            .upload(fileName, uploadFile.data, {
+                contentType: uploadFile.mimetype
+            });
+
+        if (uploadError) {
+          console.error('❌ Supabase Storage Error:', uploadError);
+          return res.status(500).json({ error: `Storage Error: ${uploadError.message}. Did you create the 'passbook' bucket?` });
+        }
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('passbook')
+            .getPublicUrl(fileName);
+
+        // 3. Update Staff Table
+        const { error: updateError } = await supabase
+            .from('staff')
+            .update({ passbook_url: publicUrl })
+            .eq('staff_id', staff_id);
+
+        if (updateError) {
+          console.error('❌ DB Update Error:', updateError);
+          return res.status(500).json({ error: `Database Error: ${updateError.message}` });
+        }
+
+        res.json({ message: 'Success', url: publicUrl });
+    } catch (err) {
+        console.error('❌ Upload Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // LEAVE APPLICATION ENDPOINTS
 app.post('/staff/leave/apply', async (req, res) => {
     try {
