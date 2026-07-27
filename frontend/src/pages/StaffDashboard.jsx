@@ -640,6 +640,108 @@ function StaffDashboard() {
                   )}
                 </div>
 
+                <div className="bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50 mt-4">
+                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Aadhaar Card (Front)</p>
+                  {staff.aadhaar_front_url ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-green-600 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        Uploaded
+                      </span>
+                      <a href={staff.aadhaar_front_url} target="_blank" rel="noreferrer" className="text-[10px] font-black text-indigo-600 uppercase underline">View Document</a>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center py-2">
+                      <input
+                        type="file"
+                        id="aadhaarFrontUpload"
+                        className="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+
+                          const formData = new FormData();
+                          formData.append('aadhaarFrontFile', file);
+                          formData.append('staff_id', staff.staff_id);
+
+                          try {
+                            setActionLoading(true);
+                            const res = await axios.post(`${API_URL}/staff/upload-aadhaar-front`, formData);
+                            // Update local staff state
+                            const updatedStaff = { ...staff, aadhaar_front_url: res.data.url };
+                            setStaff(updatedStaff);
+                            localStorage.setItem('staffInfo', JSON.stringify(updatedStaff));
+                            alert('Uploaded Successfully!');
+                          } catch (err) {
+                            alert('Upload failed: ' + (err.response?.data?.error || err.message));
+                          } finally {
+                            setActionLoading(false);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="aadhaarFrontUpload"
+                        className="w-full py-3 bg-white border-2 border-dashed border-indigo-200 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-center cursor-pointer hover:bg-indigo-50 transition-all"
+                      >
+                        {actionLoading ? 'Uploading...' : 'Upload Document +'}
+                      </label>
+                      <p className="text-[8px] text-gray-400 mt-2 lowercase font-bold">pdf, jpg, png supported (max 5mb)</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50 mt-4">
+                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Aadhaar Card (Back)</p>
+                  {staff.aadhaar_back_url ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-green-600 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                        Uploaded
+                      </span>
+                      <a href={staff.aadhaar_back_url} target="_blank" rel="noreferrer" className="text-[10px] font-black text-indigo-600 uppercase underline">View Document</a>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center py-2">
+                      <input
+                        type="file"
+                        id="aadhaarBackUpload"
+                        className="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+
+                          const formData = new FormData();
+                          formData.append('aadhaarBackFile', file);
+                          formData.append('staff_id', staff.staff_id);
+
+                          try {
+                            setActionLoading(true);
+                            const res = await axios.post(`${API_URL}/staff/upload-aadhaar-back`, formData);
+                            // Update local staff state
+                            const updatedStaff = { ...staff, aadhaar_back_url: res.data.url };
+                            setStaff(updatedStaff);
+                            localStorage.setItem('staffInfo', JSON.stringify(updatedStaff));
+                            alert('Uploaded Successfully!');
+                          } catch (err) {
+                            alert('Upload failed: ' + (err.response?.data?.error || err.message));
+                          } finally {
+                            setActionLoading(false);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor="aadhaarBackUpload"
+                        className="w-full py-3 bg-white border-2 border-dashed border-indigo-200 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-center cursor-pointer hover:bg-indigo-50 transition-all"
+                      >
+                        {actionLoading ? 'Uploading...' : 'Upload Document +'}
+                      </label>
+                      <p className="text-[8px] text-gray-400 mt-2 lowercase font-bold">pdf, jpg, png supported (max 5mb)</p>
+                    </div>
+                  )}
+                </div>
+
                 <div className="pt-2">
                   <button
                     onClick={() => navigate('/change-password')}

@@ -457,6 +457,94 @@ app.post('/staff/upload-passbook', async (req, res) => {
     }
 });
 
+// Aadhaar Front Upload
+app.post('/staff/upload-aadhaar-front', async (req, res) => {
+    try {
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ error: 'No files were uploaded.' });
+        }
+
+        const { staff_id } = req.body;
+        const uploadFile = req.files.aadhaarFrontFile;
+        const fileExt = uploadFile.name.split('.').pop();
+        const fileName = `${staff_id}_aadhaar_front_${Date.now()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('aadhaar')
+            .upload(fileName, uploadFile.data, {
+                contentType: uploadFile.mimetype
+            });
+
+        if (uploadError) {
+          console.error('❌ Supabase Storage Error:', uploadError);
+          return res.status(500).json({ error: `Storage Error: ${uploadError.message}. Did you create the 'aadhaar' bucket?` });
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('aadhaar')
+            .getPublicUrl(fileName);
+
+        const { error: updateError } = await supabase
+            .from('staff')
+            .update({ aadhaar_front_url: publicUrl })
+            .eq('staff_id', staff_id);
+
+        if (updateError) {
+          console.error('❌ DB Update Error:', updateError);
+          return res.status(500).json({ error: `Database Error: ${updateError.message}` });
+        }
+
+        res.json({ message: 'Success', url: publicUrl });
+    } catch (err) {
+        console.error('❌ Upload Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Aadhaar Back Upload
+app.post('/staff/upload-aadhaar-back', async (req, res) => {
+    try {
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ error: 'No files were uploaded.' });
+        }
+
+        const { staff_id } = req.body;
+        const uploadFile = req.files.aadhaarBackFile;
+        const fileExt = uploadFile.name.split('.').pop();
+        const fileName = `${staff_id}_aadhaar_back_${Date.now()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('aadhaar')
+            .upload(fileName, uploadFile.data, {
+                contentType: uploadFile.mimetype
+            });
+
+        if (uploadError) {
+          console.error('❌ Supabase Storage Error:', uploadError);
+          return res.status(500).json({ error: `Storage Error: ${uploadError.message}. Did you create the 'aadhaar' bucket?` });
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('aadhaar')
+            .getPublicUrl(fileName);
+
+        const { error: updateError } = await supabase
+            .from('staff')
+            .update({ aadhaar_back_url: publicUrl })
+            .eq('staff_id', staff_id);
+
+        if (updateError) {
+          console.error('❌ DB Update Error:', updateError);
+          return res.status(500).json({ error: `Database Error: ${updateError.message}` });
+        }
+
+        res.json({ message: 'Success', url: publicUrl });
+    } catch (err) {
+        console.error('❌ Upload Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // LEAVE APPLICATION ENDPOINTS
 app.post('/staff/leave/apply', async (req, res) => {
     try {
