@@ -16,4 +16,4 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 frontend/.env.development
-frontend/.env.*
+!frontend/.env.production
