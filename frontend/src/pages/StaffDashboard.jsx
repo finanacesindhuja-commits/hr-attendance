@@ -4,8 +4,8 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Geolocation } from '@capacitor/geolocation';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
+const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'http://localhost:5050';
 
 let socket;
 
@@ -205,25 +205,48 @@ function StaffDashboard() {
     setTrackingActive(false);
   };
 
+  const getSafeLocation = async () => {
+    try {
+      let perm = await Geolocation.checkPermissions();
+      if (perm.location !== 'granted') {
+        perm = await Geolocation.requestPermissions();
+      }
+      if (perm.location !== 'granted') {
+        throw new Error('Location permission is required to mark attendance. Please enable location permissions in your device settings.');
+      }
+    } catch (e) {
+      console.warn('Permission check/request error:', e);
+    }
+
+    try {
+      // First try with high accuracy GPS
+      return await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true, timeout: 8000, maximumAge: 30000
+      });
+    } catch (highAccErr) {
+      console.warn('GPS High accuracy timed out, falling back to network location...', highAccErr);
+      // Fallback to network/cell/wifi location with low accuracy
+      return await Geolocation.getCurrentPosition({
+        enableHighAccuracy: false, timeout: 15000, maximumAge: 60000
+      });
+    }
+  };
+
   const handleCheckIn = async () => {
     setActionLoading(true);
     try {
-      // Prompt for permissions natively just in case
-      await Geolocation.checkPermissions();
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true, timeout: 15000, maximumAge: 60000
-      });
-
+      const pos = await getSafeLocation();
       const { latitude, longitude } = pos.coords;
       const response = await axios.post(`${API_URL}/staff/attendance/check-in`, {
         staff_id: staff.staff_id, latitude, longitude
       });
       setAttendance(response.data.attendance);
       startLocationTracking(staff.staff_id, staff.name);
-
+      alert('Check-in successful!');
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || 'Check-in failed');
+      const msg = err.response?.data?.error || (err.response ? `Server Error (${err.response.status})` : err.message || 'Check-in failed');
+      alert(msg);
     } finally {
       setActionLoading(false);
     }
@@ -232,20 +255,18 @@ function StaffDashboard() {
   const handleCheckOut = async () => {
     setActionLoading(true);
     try {
-      const pos = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true, timeout: 15000, maximumAge: 60000
-      });
-
+      const pos = await getSafeLocation();
       const { latitude, longitude } = pos.coords;
       const response = await axios.post(`${API_URL}/staff/attendance/check-out`, {
         staff_id: staff.staff_id, latitude, longitude
       });
       setAttendance(response.data.attendance);
       stopLocationTracking();
-
+      alert('Check-out successful!');
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || err.message || 'Check-out failed');
+      const msg = err.response?.data?.error || (err.response ? `Server Error (${err.response.status})` : err.message || 'Check-out failed');
+      alert(msg);
     } finally {
       setActionLoading(false);
     }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-dx3c.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 function ChangePassword() {
   const [newPassword, setNewPassword] = useState('');

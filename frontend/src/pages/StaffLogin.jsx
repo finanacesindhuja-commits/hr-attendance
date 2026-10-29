@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 function StaffLogin() {
   const [staffId, setStaffId] = useState('');
@@ -31,7 +31,13 @@ function StaffLogin() {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid Staff ID or password');
+      if (!err.response) {
+        setError(`Cannot connect to server (${err.message}). Make sure Backend is running on port 5050.`);
+      } else if (err.response.status === 503) {
+        setError('Backend server is suspended (503 Service Suspended).');
+      } else {
+        setError(err.response?.data?.error || 'Invalid Staff ID or password');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5002';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5050';
 
 export default function AttendanceHistory() {
   const [history, setHistory] = useState([]);
