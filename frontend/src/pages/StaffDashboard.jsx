@@ -4,8 +4,14 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Geolocation } from '@capacitor/geolocation';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+let API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+if (!API_URL || API_URL.includes('dx3c')) {
+  API_URL = 'https://hr-attendance-1-bmbj.onrender.com';
+}
+let TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+if (!TRACKING_URL || TRACKING_URL.includes('dx3c')) {
+  TRACKING_URL = 'https://hr-attendance-1-bmbj.onrender.com';
+}
 
 let socket;
 

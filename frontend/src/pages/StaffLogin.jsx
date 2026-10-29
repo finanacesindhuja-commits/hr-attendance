@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+let API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+if (!API_URL || API_URL.includes('dx3c')) {
+  API_URL = 'https://hr-attendance-1-bmbj.onrender.com';
+}
 
 function StaffLogin() {
   const [staffId, setStaffId] = useState('');

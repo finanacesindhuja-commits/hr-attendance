@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+let API = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+if (!API || API.includes('dx3c')) {
+  API = 'https://hr-attendance-1-bmbj.onrender.com';
+}
 
 export default function AttendanceHistory() {
   const [history, setHistory] = useState([]);
