@@ -4,8 +4,8 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { Geolocation } from '@capacitor/geolocation';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-ar5c.onrender.com';
-const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-ar5c.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://hr-attendance-1-bmbj.onrender.com';
+const TRACKING_URL = import.meta.env.VITE_TRACKING_URL || 'https://hr-attendance-1-bmbj.onrender.com';
 
 let socket;
 
