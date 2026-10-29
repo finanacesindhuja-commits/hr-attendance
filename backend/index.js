@@ -67,7 +67,6 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('🌊 UNHANDLED REJECTION:', reason);
-  process.exit(1);
 });
 
 // Middleware
@@ -601,6 +600,7 @@ app.get('/staff/leave/history/:staff_id', async (req, res) => {
     }
 });
 
+app.get('/', (req, res) => res.send('🚀 HR Staff Attendance Backend is running smoothly!'));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 http.listen(port, async () => {
