@@ -32,7 +32,7 @@ function StaffLogin() {
       }
     } catch (err) {
       if (!err.response) {
-        setError(`Cannot connect to server (${err.message}). Make sure Backend is running on port 5050.`);
+        setError(`Cannot connect to backend server (${err.message}). Please check backend status.`);
       } else if (err.response.status === 503) {
         setError('Backend server is suspended (503 Service Suspended).');
       } else {

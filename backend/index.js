@@ -73,9 +73,13 @@ process.on('unhandledRejection', (reason, promise) => {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(helmet({
-  crossOriginResourcePolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginEmbedderPolicy: false
 }));
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+});
 app.use(express.json());
 
 app.use((req, res, next) => {
