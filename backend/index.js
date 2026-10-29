@@ -70,8 +70,12 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Middleware
-app.use(helmet());
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 app.use(express.json());
 
 app.use((req, res, next) => {
